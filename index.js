@@ -134,6 +134,35 @@ async function run() {
       }
     });
 
+    // Update artifact in all-data
+    app.put("/all-data/:id", async (req, res) => {
+      const { id } = req.params;
+      const updatedData = req.body;
+
+      console.log("Received update request for id:", id);
+      console.log("Update data:", updatedData);
+
+      if (!ObjectId.isValid(id)) {
+        return res.status(400).json({ error: "Invalid artifact id" });
+      }
+
+      try {
+        const filter = { _id: new ObjectId(id) };
+        const updateDoc = { $set: updatedData };
+
+        const result = await database.updateOne(filter, updateDoc);
+
+        if (result.matchedCount === 1) {
+          res.status(200).json({ message: "Artifact updated successfully" });
+        } else {
+          res.status(404).json({ error: "Artifact not found" });
+        }
+      } catch (error) {
+        console.error("Error updating artifact:", error);
+        res.status(500).json({ error: "Failed to update artifact" });
+      }
+    });
+
     //TODO:
   } finally {
     // Ensures that the client will close when you finish/error
