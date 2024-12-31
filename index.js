@@ -1,11 +1,14 @@
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
+const coockieParser = require("cookie-parser");
 const app = express();
 const port = process.env.PORT || 5000;
 require("dotenv").config();
 
 app.use(cors());
 app.use(express.json());
+app.use(coockieParser());
 
 app.get("/", (req, res) => {
   res.send("server ok");
@@ -35,6 +38,17 @@ async function run() {
     // !
     const database = client.db("assignment-11").collection("all-data");
     const liked = client.db("assignment-11").collection("liked");
+
+    // ? jwt
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      const token = await jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1h",
+      });
+      res
+        .cookie("token", token, { httpOnly: true, secure: false })
+        .send({ success: true });
+    });
 
     // get
     app.get("/all-data", async (req, res) => {
